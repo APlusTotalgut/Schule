@@ -1,0 +1,240 @@
+document.addEventListener('DOMContentLoaded' ,() => {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const cols = 7;
+    const rows = 6;
+    const cellSize = 100;
+    const width = cols  * cellSize;
+    const height =  rows * cellSize;
+    const linewidth = 3;
+    canvas.height = height + rows;
+    canvas.width = width + cols;
+    const verschiebung = linewidth / 2;
+    let winner = null;
+
+    const reset = document.getElementById('resetButton');
+    const scores = {
+        0 : 0,
+        1 : 0
+    }
+
+    const colors = {
+        0 : 'green',
+        1 : 'blue',
+    }
+    const firstPlayer = document.getElementById("player0");
+    const secondPlayer = document.getElementById("player1");
+
+    let roundRectStartX;
+    let roundRectStartY;
+    let roundedRextDegree;
+
+    firstPlayer.style.color = colors[0];
+    secondPlayer.style.color = colors[1];
+    let player = 0;
+    let gameStand = {};
+
+    function draw(){
+        ctx.strokeStyle = '#555'
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.beginPath();
+        ctx.lineWidth = linewidth;
+        for (let col = 0; col < cols; col++){
+            for (let row = 0; row < rows; row++){
+                ctx.rect(cellSize * col + verschiebung,cellSize * row + verschiebung, cellSize, cellSize)
+                ctx.stroke();
+            }
+        }
+
+        Object.entries(gameStand).forEach(([col, colScheiben]) => {
+            Object.values(colScheiben).forEach((scheibe) => {
+                scheibe.set();
+            });
+        });
+
+        if (winner){
+            drawRounded(roundRectStartX, roundRectStartY, roundedRextDegree);
+            // console.log('drawROunded');
+        }
+        // console.log('request');
+        // console.log(gameStand)
+        requestAnimationFrame(draw)
+    }
+    function click(e){
+        if (winner) return;
+        let rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const col = Math.floor(x/cellSize)
+        const row = Math.floor(y/cellSize);
+        if (gameStand[col]?.length >= rows) return;
+
+
+        if (gameStand[col] == undefined){
+            gameStand[col] = [];
+        }
+
+        if (col >= cols) return;
+
+        const position = rows - (gameStand[col].length + 1);
+        const scheibeX = col * cellSize + cellSize / 2 + verschiebung;
+        const scheibeY = position * cellSize + cellSize / 2 + verschiebung;
+        const scheibeRadius = cellSize / 2 * 0.9;
+        
+        gameStand[col].push(new Scheibe(ctx, scheibeX, scheibeY, scheibeRadius, colors[player]));
+        player = player == 0 ? 1 : 0;
+        // console.log(gameStand);
+        checkIfEnded(gameStand);
+        // console.log(player);
+    }
+
+    function checkIfEnded(gameStand){
+        Object.entries(gameStand).forEach(([col, colScheiben]) => {
+            if (winner) return;
+            Object.entries(colScheiben).forEach(([row, scheibe]) => {
+                if (winner) return;
+                // Nach oben
+                const horizontTreffer = [];
+                const verticalTreffer = [];
+                const schraegeTrefferRechts = [];
+                const schraegeTrefferLinks = [];
+                const currentColor = scheibe.color;
+                row = parseInt(row);
+                col = parseInt(col);
+
+                // gehe bis zu 3 nach oben
+                horizontTreffer.push(scheibe);
+                for (let h = row + 1; h <= row + 3; h++){
+                    if (colScheiben[h] !== undefined && colScheiben[h].color == currentColor){
+                        horizontTreffer.push(colScheiben[h]);
+                    }else{
+                        break;
+                    }
+                }
+                if (horizontTreffer.length >= 4){
+                    win(currentColor);
+                    round(horizontTreffer, 90)
+                }
+                // gehe bis zu 3 nach rechts
+                verticalTreffer.push(scheibe);
+                for (let w = col + 1; w <= col + 3; w++){
+                    const target = gameStand[w]?.[row];
+                    if (target !== undefined && target.color == currentColor){
+                        verticalTreffer.push(target);
+                    }else{
+                        break;
+                    }
+                }
+                if (verticalTreffer.length >= 4){
+                    win(currentColor);
+                    let degree = 0;
+                    if (verticalTreffer[0].x < verticalTreffer[3].x){
+                        degree = 180;
+                    }
+                    round(verticalTreffer, degree)
+                }
+                // gehe schräg rechts hoch | i steht für increasement
+
+                schraegeTrefferRechts.push(scheibe);
+                for (let i = 1; i <= 3; i++){
+                    const newCol = col + i;
+                    const newRow = row + i;
+                    const target = gameStand[newCol]?.[newRow];
+                    if (target !== undefined && target.color == currentColor){
+                        schraegeTrefferRechts.push(target);
+                    }else{
+                        break;
+                    }
+                }
+                if (schraegeTrefferRechts.length >= 4){
+                    win(currentColor);
+                    round(schraegeTrefferRechts, 135);
+                } 
+
+                // gehe schräg links hoch | i steht für increasement bzw. decreasement
+                schraegeTrefferLinks.push(scheibe);
+                for (let i = 1; i <= 3; i++){
+                    const newCol = col + i;
+                    const newRow = row - i;
+                    const target = gameStand[newCol]?.[newRow];
+                    if (target !== undefined && target.color == currentColor){
+                        schraegeTrefferLinks.push(target);
+                    }else{
+                        break;
+                    }
+                }
+                if (schraegeTrefferLinks.length >= 4){
+                    win(currentColor);
+                    round(schraegeTrefferLinks, 135 + 90)
+                } 
+                // console.log('vertical',verticalTreffer);
+                // console.log('horizontTreffer',horizontTreffer);
+            });
+        });
+    }
+
+    function win(currentColor){
+        winner = currentColor;
+        const winnerP = document.getElementById('winner');
+        winnerP.innerHTML = "'" + currentColor + "'" + ' hat gewonnen!'  
+        winnerP.style.color = currentColor;   
+        winnerP.style.visibility = 'visible';    
+        reset.style.display = 'block';
+        
+        const playerNumber = Object.keys(colors).find(k => colors[k] === currentColor);
+        scores[playerNumber]++;
+        // console.log(scores);
+        document.getElementById('player' + playerNumber).innerHTML = scores[playerNumber];
+    }
+
+    function round(treffer, degree){
+        console.log(treffer);
+        roundRectStartX = treffer[0].x;
+        roundRectStartY = treffer[0].endy;
+        console.log(treffer[0].x, treffer[0].endy)
+        roundedRextDegree = degree;
+    }
+
+    function drawRounded(x,y, degree){
+        ctx.save(); // Save the current canvas state
+        
+        // Calculate the center of the rectangle
+        const rectCenterX = x;
+        const rectCenterY = y;
+        let cells = 4;
+        
+        // Translate to the center point and rotate
+        ctx.translate(rectCenterX, rectCenterY);
+        if (degree != 90 && degree != 180 && degree != 0){
+            cells = 4 * Math.sqrt(2)
+        }
+        ctx.rotate((degree * Math.PI) / 180);
+        
+        ctx.beginPath();
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 5;
+        
+        // Draw rectangle centered at origin (0,0) after translation
+        ctx.roundRect(-cellSize * (cells - cells / 8), -cellSize / (cells / 2), cellSize * cells, cellSize, 180);
+        // ctx.roundRect(-cellSize * 0.5, -cellSize / 2, cellSize * cells, cellSize, 180);
+        ctx.stroke();
+        
+        ctx.restore(); // Restore the canvas state
+    }
+
+    reset.addEventListener('click', () => {
+        if (!winner) return;
+        winner = null;
+        gameStand = {};
+        player = 0;
+
+        const winnerP = document.getElementById('winner');
+        winnerP.style.visibility = 'hidden';  
+        winnerP.innerHTML = "Kein Gewinner da!";
+        winnerP.style.color = 'black';
+        reset.style.display = 'none';
+    })
+
+    canvas.addEventListener('click', click);
+    draw();
+});

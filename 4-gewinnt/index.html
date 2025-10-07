@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hallo Welt</title>
+    <script src="./game.js"></script>
+    <script src="./Scheibe.js"></script>
+</head>
+<body style="background-color: #181818;font-family: Arial, Helvetica, sans-serif;">
+    <h1 style="color: #eee; text-align: center;font-family: Arial;font-size: 3rem;margin-bottom: 0;">4 Gewinnt</h1>
+    <p style="font-size: 2rem;text-align: center; visibility: hidden;" id="winner">noch niemand hat gewonnen</p>
+    <p style="color: #eee; font-size: 2.4rem;text-align: center; margin-top: 0px;"><span id="player0">0</span> : <span id="player1">0</span></p>
+    <div style="display: flex;">
+        <canvas style="background-color: transparent;margin: 0 auto;" id="canvas"></canvas>
+    </div>
+    <button id="resetButton" style="all: unset;position: absolute;right: 40px; top: 40px;display: none;background-color: #444;cursor: pointer; padding: 4px; border-radius: 3px;"><svg xmlns="http://www.w3.org/2000/svg" height="50px" viewBox="0 -960 960 960" width="50px" fill="#5c5"><path d="M480-80q-75 0-140.5-28.5t-114-77q-48.5-48.5-77-114T120-440h80q0 117 81.5 198.5T480-160q117 0 198.5-81.5T760-440q0-117-81.5-198.5T480-720h-6l62 62-56 58-160-160 160-160 56 58-62 62h6q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-440q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-80Z"/></svg></button>
+</body>
+</html>
