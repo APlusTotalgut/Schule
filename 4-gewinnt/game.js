@@ -89,9 +89,11 @@ document.addEventListener('DOMContentLoaded' ,() => {
     }
 
     function checkIfEnded(gameStand){
+        let objectCount = 0;
         Object.entries(gameStand).forEach(([col, colScheiben]) => {
             if (winner) return;
             Object.entries(colScheiben).forEach(([row, scheibe]) => {
+                objectCount++;
                 if (winner) return;
                 // Nach oben
                 const horizontTreffer = [];
@@ -171,6 +173,18 @@ document.addEventListener('DOMContentLoaded' ,() => {
                 // console.log('horizontTreffer',horizontTreffer);
             });
         });
+        if (objectCount >= rows * cols){
+            unendschieden();
+        }
+    }
+
+    function unendschieden(){
+        winner = 'grey';
+        const winnerP = document.getElementById('winner');
+        winnerP.innerHTML = "unendschieden. Niedmand hat gewonnen!"  
+        winnerP.style.color = 'grey';   
+        winnerP.style.visibility = 'visible';    
+        reset.style.display = 'block';
     }
 
     function win(currentColor){
