@@ -25,9 +25,7 @@ document.addEventListener('DOMContentLoaded' ,() => {
     const firstPlayer = document.getElementById("player0");
     const secondPlayer = document.getElementById("player1");
 
-    let roundRectStartX;
-    let roundRectStartY;
-    let roundedRextDegree;
+    let treffer = [];
 
     firstPlayer.style.color = colors[0];
     secondPlayer.style.color = colors[1];
@@ -53,7 +51,7 @@ document.addEventListener('DOMContentLoaded' ,() => {
         });
 
         if (winner){
-            drawRounded(roundRectStartX, roundRectStartY, roundedRextDegree);
+            drawRounded();
             // console.log('drawROunded');
         }
         // console.log('request');
@@ -84,8 +82,8 @@ document.addEventListener('DOMContentLoaded' ,() => {
         gameStand[col].push(new Scheibe(ctx, scheibeX, scheibeY, scheibeRadius, colors[player]));
         player = player == 0 ? 1 : 0;
         // console.log(gameStand);
-        checkIfEnded(gameStand);
-        // console.log(player);
+        treffer = checkIfEnded(gameStand);
+        console.log(player);
     }
 
     function checkIfEnded(gameStand){
@@ -115,7 +113,7 @@ document.addEventListener('DOMContentLoaded' ,() => {
                 }
                 if (horizontTreffer.length >= 4){
                     win(currentColor);
-                    round(horizontTreffer, 90)
+                    treffer = horizontTreffer;
                 }
                 // gehe bis zu 3 nach rechts
                 verticalTreffer.push(scheibe);
@@ -133,7 +131,7 @@ document.addEventListener('DOMContentLoaded' ,() => {
                     if (verticalTreffer[0].x < verticalTreffer[3].x){
                         degree = 180;
                     }
-                    round(verticalTreffer, degree)
+                    treffer =verticalTreffer
                 }
                 // gehe schräg rechts hoch | i steht für increasement
 
@@ -150,7 +148,7 @@ document.addEventListener('DOMContentLoaded' ,() => {
                 }
                 if (schraegeTrefferRechts.length >= 4){
                     win(currentColor);
-                    round(schraegeTrefferRechts, 135);
+                    treffer
                 } 
 
                 // gehe schräg links hoch | i steht für increasement bzw. decreasement
@@ -167,21 +165,23 @@ document.addEventListener('DOMContentLoaded' ,() => {
                 }
                 if (schraegeTrefferLinks.length >= 4){
                     win(currentColor);
-                    round(schraegeTrefferLinks, 135 + 90)
+                    treffer=schraegeTrefferLinks;
                 } 
                 // console.log('vertical',verticalTreffer);
                 // console.log('horizontTreffer',horizontTreffer);
             });
         });
         if (objectCount >= rows * cols){
-            unendschieden();
+            unentschieden();
         }
+
+        return treffer;
     }
 
-    function unendschieden(){
+    function unentschieden(){
         winner = 'grey';
         const winnerP = document.getElementById('winner');
-        winnerP.innerHTML = "unendschieden. Niedmand hat gewonnen!"  
+        winnerP.innerHTML = "unentschieden. Niedmand hat gewonnen!"  
         winnerP.style.color = 'grey';   
         winnerP.style.visibility = 'visible';    
         reset.style.display = 'block';
@@ -201,38 +201,35 @@ document.addEventListener('DOMContentLoaded' ,() => {
         document.getElementById('player' + playerNumber).innerHTML = scores[playerNumber];
     }
 
-    function round(treffer, degree){
-        console.log(treffer);
-        roundRectStartX = treffer[0].x;
-        roundRectStartY = treffer[0].endy;
-        console.log(treffer[0].x, treffer[0].endy)
-        roundedRextDegree = degree;
-    }
+    function drawRounded(){
+        //calculate the length of the rectangle from the distance of the first and last treffer
+        first = treffer[0];
+        last = treffer[treffer.length - 1];
+        length = Math.sqrt((last.x - first.x) ** 2 + (last.y - first.y) ** 2);
 
-    function drawRounded(x,y, degree){
+        //calculate the angle of rotation with arcsin
+        console.log(first,last);
+        angle = Math.asin((last.y-first.y)/length);
+        console.log(last.y,first.y,length,angle);
+
         ctx.save(); // Save the current canvas state
         
-        // Calculate the center of the rectangle
-        const rectCenterX = x;
-        const rectCenterY = y;
-        let cells = 4;
-        
-        // Translate to the center point and rotate
-        ctx.translate(rectCenterX, rectCenterY);
-        if (degree != 90 && degree != 180 && degree != 0){
-            cells = 4 * Math.sqrt(2)
-        }
-        ctx.rotate((degree * Math.PI) / 180);
+        // Translate to the center of the first scheibe
+        ctx.translate(first.x, first.y);
+        ctx.rotate(angle);
         
         ctx.beginPath();
         ctx.strokeStyle = 'red';
         ctx.lineWidth = 5;
         
+        r = first.radius;
+
         // Draw rectangle centered at origin (0,0) after translation
-        ctx.roundRect(-cellSize * (cells - cells / 8), -cellSize / (cells / 2), cellSize * cells, cellSize, 180);
-        // ctx.roundRect(-cellSize * 0.5, -cellSize / 2, cellSize * cells, cellSize, 180);
+        ctx.roundRect(-r,-r,length + r*2,r*2,r);
+        console.log(-r, -r, length + r*2, r * 2, r);
         ctx.stroke();
-        
+
+        //Translate back and rotate back
         ctx.restore(); // Restore the canvas state
     }
 
