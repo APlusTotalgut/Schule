@@ -83,11 +83,11 @@ document.addEventListener('DOMContentLoaded' ,() => {
         player = player == 0 ? 1 : 0;
         // console.log(gameStand);
         treffer = checkIfEnded(gameStand);
-        console.log(player);
     }
 
     function checkIfEnded(gameStand){
         let objectCount = 0;
+        let winConfig=[];
         Object.entries(gameStand).forEach(([col, colScheiben]) => {
             if (winner) return;
             Object.entries(colScheiben).forEach(([row, scheibe]) => {
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded' ,() => {
                 }
                 if (horizontTreffer.length >= 4){
                     win(currentColor);
-                    treffer = horizontTreffer;
+                    winConfig = horizontTreffer;
                 }
                 // gehe bis zu 3 nach rechts
                 verticalTreffer.push(scheibe);
@@ -127,11 +127,7 @@ document.addEventListener('DOMContentLoaded' ,() => {
                 }
                 if (verticalTreffer.length >= 4){
                     win(currentColor);
-                    let degree = 0;
-                    if (verticalTreffer[0].x < verticalTreffer[3].x){
-                        degree = 180;
-                    }
-                    treffer =verticalTreffer
+                    winConfig=verticalTreffer;
                 }
                 // gehe schräg rechts hoch | i steht für increasement
 
@@ -148,7 +144,7 @@ document.addEventListener('DOMContentLoaded' ,() => {
                 }
                 if (schraegeTrefferRechts.length >= 4){
                     win(currentColor);
-                    treffer
+                    winConfig=schraegeTrefferRechts;
                 } 
 
                 // gehe schräg links hoch | i steht für increasement bzw. decreasement
@@ -165,17 +161,15 @@ document.addEventListener('DOMContentLoaded' ,() => {
                 }
                 if (schraegeTrefferLinks.length >= 4){
                     win(currentColor);
-                    treffer=schraegeTrefferLinks;
+                    winConfig=schraegeTrefferLinks;
                 } 
-                // console.log('vertical',verticalTreffer);
-                // console.log('horizontTreffer',horizontTreffer);
             });
         });
+       
         if (objectCount >= rows * cols){
             unentschieden();
         }
-
-        return treffer;
+        return winConfig;
     }
 
     function unentschieden(){
