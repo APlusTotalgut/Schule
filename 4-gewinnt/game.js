@@ -114,6 +114,7 @@ document.addEventListener('DOMContentLoaded' ,() => {
                 if (horizontTreffer.length >= 4){
                     win(currentColor);
                     winConfig = horizontTreffer;
+                    return winConfig;
                 }
                 // gehe bis zu 3 nach rechts
                 verticalTreffer.push(scheibe);
@@ -128,6 +129,7 @@ document.addEventListener('DOMContentLoaded' ,() => {
                 if (verticalTreffer.length >= 4){
                     win(currentColor);
                     winConfig=verticalTreffer;
+                    return winConfig;
                 }
                 // gehe schräg rechts hoch | i steht für increasement
 
@@ -145,7 +147,8 @@ document.addEventListener('DOMContentLoaded' ,() => {
                 if (schraegeTrefferRechts.length >= 4){
                     win(currentColor);
                     winConfig=schraegeTrefferRechts;
-                } 
+                    return winConfig;
+                }
 
                 // gehe schräg links hoch | i steht für increasement bzw. decreasement
                 schraegeTrefferLinks.push(scheibe);
@@ -162,7 +165,8 @@ document.addEventListener('DOMContentLoaded' ,() => {
                 if (schraegeTrefferLinks.length >= 4){
                     win(currentColor);
                     winConfig=schraegeTrefferLinks;
-                } 
+                    return winConfig;
+                }
             });
         });
        
@@ -199,6 +203,7 @@ document.addEventListener('DOMContentLoaded' ,() => {
         //calculate the length of the rectangle from the distance of the first and last treffer
         first = treffer[0];
         last = treffer[treffer.length - 1];
+        // Satz des Pythagoras angewendet first - last hoch 2 ist ja immer positiv deswegen passt
         length = Math.sqrt((last.x - first.x) ** 2 + (last.y - first.y) ** 2);
 
         //calculate the angle of rotation with arcsin
